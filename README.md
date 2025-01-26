@@ -5,7 +5,7 @@ A simple Arkanoid game that fits in a QR code.
 
 ## Tools used 
 - [HTML minifier made for Say Cheese](https://ds667.github.io/animated-octo-meme/)
-- [JavaScript minifier](https://minify-js.com/)
+- [JavaScript minifier](https://skalman.github.io/UglifyJS-online/)
 - [CSS minifier](https://cssminifier.com/)
 
 ## QR Code

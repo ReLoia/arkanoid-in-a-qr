@@ -15,43 +15,25 @@
 <canvas height="140" width="420"></canvas>
 </body>
 <script>
-    const canvas = document.querySelector("canvas"), ctx = canvas.getContext("2d"), W = canvas.width, H = canvas.height;
+    const C = document.querySelector("canvas"), ctx = C.getContext("2d"), W = C.width, H = C.height;
 
-    class B {
-        constructor(x, y, w, h, c, v) {
-            this.x = x;
-            this.y = y;
-            this.w = w;
-            this.h = h;
-            this.c = c || "white";
-            this.v = v;
-            this.d = false;
-        }
-
-        draw(ctx) {
-            if (!this.d) {
-                ctx.fillStyle = this.c;
-                ctx.fillRect(this.x, this.y, this.w, this.h);
-            }
-        }
-
-        checkCollision(b) {
-            if (
-                !this.d &&
-                b.x > this.x &&
-                b.x < this.x + this.w &&
-                b.y > this.y &&
-                b.y < this.y + this.h
-            ) {
-                this.d = true;
-                return this.v;
-            }
-            return 0;
+    const D = (B) => {
+        if (!B.d) {
+            ctx.fillStyle = B.c;
+            ctx.fillRect(B.x, B.y, B.w, B.h);
         }
     }
 
+    const cC = (B, b) => {
+        if (!B.d && (b.x > B.x) && (b.x < B.x + B.w) && (b.y > B.y) && (b.y < B.y + B.h)) {
+            B.d = 1;
+            return B.v;
+        }
+        return 0
+    }
+
     const s = {
-        p: false,
+        p: 0,
         b: {
             x: W / 2,
             y: H / 2 + 20,
@@ -67,63 +49,27 @@
             y: H - 20,
             lives: 2
         },
-        bricks: [],
+        bs: [],
         ab: 0,
-        brickConfig: {
-            rows: 2,
-            cols: 11,
-            width: 30,
-            height: 6,
-            padding: 4,
-            offsetTop: 25,
-            offsetLeft: 20,
-        },
+        R: 2,
         s: Number(localStorage.getItem("aS")) || 0,
     };
 
     function cB() {
-        s.bricks = [];
-        for (let row = 0; row < Math.min(Math.max(s.brickConfig.rows, 1), 5); row++) {
-            for (let col = 0; col < s.brickConfig.cols; col++) {
-                const x =
-                    s.brickConfig.offsetLeft +
-                    col * (s.brickConfig.width + s.brickConfig.padding);
-                const y =
-                    s.brickConfig.offsetTop +
-                    row * (s.brickConfig.height + s.brickConfig.padding);
+        s.bs = [];
+        for (let R = 0; R < Math.min(Math.max(s.R, 1), 5); R++) {
+            for (let C = 0; C < 11; C++) {
+                x = 20 + C * 34;
+                y = 25 + R * 10;
 
-                const level = Math.abs(row-s.brickConfig.rows+1);
-                s.bricks.push(new B(x, y, s.brickConfig.width, s.brickConfig.height, ["white", "yellow", "orange", "red", "darkred"][level], 10**level));
+                L = Math.abs(R - s.R + 1);
+                s.bs.push({x, y, w: 30, h: 6, c: ["white", "yellow", "orange", "red", "darkred"][L], v: 10 ** L, d: 0})
             }
         }
-        s.ab = s.brickConfig.rows*s.brickConfig.cols;
+        s.ab = s.R * 11;
     }
 
-    function draw() {
-        ctx.clearRect(0, 0, W, H);
-        
-        ctx.fillStyle = "#2c2c2c";
-        ctx.fillRect(0, 0, W, H);
-        
-        const {x, y, r} = s.b;
-        ctx.fillStyle = "white";
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.closePath();
-        
-        const {x: pX, y: pY, pW, pH} = s.P;
-        ctx.fillStyle = "white";
-        ctx.fillRect(pX, pY, pW, pH);
-        
-        s.bricks.forEach((brick) => brick.draw(ctx));
-        
-        ctx.fillStyle = "white";
-        ctx.font = `16px Arial`;
-        ctx.fillText(""+Math.floor(s.s), 10, 18);
-    }
-
-    function moveBall() {
+    function mB() {
         const {b, P} = s;
 
         b.x += b.dx;
@@ -148,18 +94,18 @@
 
         if (b.y + b.r > H) {
             s.P.lives -= 1;
-            s.p = false;
+            s.p = 0;
             bR();
 
             if (s.P.lives == 0) {
                 s.s *= 0.999;
-                s.brickConfig.rows -= 1;
-                resetGame();
+                s.R -= 1;
+                R();
             }
         }
 
-        s.bricks.forEach((brick) => {
-            const v = brick.checkCollision(b);
+        s.bs.forEach((B) => {
+            const v = cC(B, b);
             if (v) {
                 s.ab--;
                 b.dy = -b.dy;
@@ -168,14 +114,13 @@
         });
 
         if (s.ab === 0) {
-            s.brickConfig.rows += 1;
-            resetGame();
+            s.R += 1;
+            R();
         }
     }
 
     function mP(e) {
-        const r = canvas.getBoundingClientRect();
-        const mX = e.clientX - r.left;
+        const r = C.getBoundingClientRect(), mX = e.clientX - r.left;
 
         s.P.x = Math.max(
             Math.min(mX - s.P.pW / 2, W - s.P.pW),
@@ -183,7 +128,7 @@
         );
 
         if (!s.p) {
-            s.p = true;
+            s.p = 1;
         }
     }
 
@@ -194,7 +139,7 @@
         s.b.dy = 1.8;
     }
 
-    function resetGame() {
+    function R() {
         bR();
         s.P.lives = 2;
         s.P.x = W / 2 - s.P.pW / 2;
@@ -203,19 +148,40 @@
     }
 
     function gL() {
-        draw();
+        ctx.clearRect(0, 0, W, H);
+
+        ctx.fillStyle = "#2c2c2c";
+        ctx.fillRect(0, 0, W, H);
+
+        const {x, y, r} = s.b;
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+
+        const {x: pX, y: pY, pW, pH} = s.P;
+        ctx.fillStyle = "white";
+        ctx.fillRect(pX, pY, pW, pH);
+
+        s.bs.forEach((b) => D(b));
+
+        ctx.fillStyle = "white";
+        ctx.font = `16px Arial`;
+        ctx.fillText("" + Math.floor(s.s), 10, 18);
+        
         if (!s.p) {
             ctx.font = "14px monospace";
-            const text = "Move your mouse to start";
+            T = "Move your mouse to start";
 
-            ctx.fillText(text, W / 2 - ctx.measureText(text).width / 2, H - 30);
+            ctx.fillText(T, W / 2 - ctx.measureText(T).width / 2, H - 30);
         } else {
-            moveBall();
+            mB();
         }
         window.requestAnimationFrame(gL);
     }
 
-    canvas.addEventListener("mousemove", mP);
+    C.addEventListener("mousemove", mP);
     cB();
     gL();
 </script>

@@ -1,1 +1,78 @@
-<title>Arkanoid</title><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1em;font-family:"AvantGarde LT Medium",sans-serif;background:#131520;color:#fff}*{margin:0}</style><h1>Arkanoid in a QR Code</h1><canvas height=140 width=420></canvas><script>const canvas=document.querySelector("canvas"),ctx=canvas.getContext("2d"),W=canvas.width,H=canvas.height;class B{constructor(s,t,i,c,e,o){this.x=s,this.y=t,this.w=i,this.h=c,this.c=e||"white",this.v=o,this.d=!1}draw(s){this.d||(s.fillStyle=this.c,s.fillRect(this.x,this.y,this.w,this.h))}checkCollision(s){return!this.d&&s.x>this.x&&s.x<this.x+this.w&&s.y>this.y&&s.y<this.y+this.h?(this.d=!0,this.v):0}}const s={p:!1,b:{x:W/2,y:H/2+20,dx:0,dy:2,r:6},P:{pW:60,pH:10,speed:5,x:W/2-40,y:H-20,lives:2},bricks:[],ab:0,brickConfig:{rows:2,cols:11,width:30,height:6,padding:4,offsetTop:25,offsetLeft:20},s:Number(localStorage.getItem("aS"))||0};function cB(){s.bricks=[];for(let t=0;t<Math.min(Math.max(s.brickConfig.rows,1),5);t++)for(let i=0;i<s.brickConfig.cols;i++){const c=s.brickConfig.offsetLeft+i*(s.brickConfig.width+s.brickConfig.padding),e=s.brickConfig.offsetTop+t*(s.brickConfig.height+s.brickConfig.padding),o=Math.abs(t-s.brickConfig.rows+1);s.bricks.push(new B(c,e,s.brickConfig.width,s.brickConfig.height,["white","yellow","orange","red","darkred"][o],10**o))}s.ab=s.brickConfig.rows*s.brickConfig.cols}function draw(){ctx.clearRect(0,0,W,H),ctx.fillStyle="#2c2c2c",ctx.fillRect(0,0,W,H);const{x:t,y:i,r:c}=s.b;ctx.fillStyle="white",ctx.beginPath(),ctx.arc(t,i,c,0,2*Math.PI),ctx.fill(),ctx.closePath();const{x:e,y:o,pW:n,pH:r}=s.P;ctx.fillStyle="white",ctx.fillRect(e,o,n,r),s.bricks.forEach((s=>s.draw(ctx))),ctx.fillStyle="white",ctx.font="16px Arial",ctx.fillText(""+Math.floor(s.s),10,18)}function moveBall(){const{b:t,P:i}=s;if(t.x+=t.dx,t.y+=t.dy,(t.x+t.r>W||t.x-t.r<0)&&(t.dx=-t.dx),t.y-t.r<0&&(t.dy=-t.dy),t.x>i.x&&t.x<i.x+i.pW&&t.y+t.r>i.y){t.dy=-Math.abs(t.dy);const s=(t.x-(i.x+i.pW/2))/i.pW*130;t.dx=2.5*Math.sin(s*(Math.PI/180))}t.y+t.r>H&&(s.P.lives-=1,s.p=!1,bR(),0==s.P.lives&&(s.s*=.999,s.brickConfig.rows-=1,resetGame())),s.bricks.forEach((i=>{const c=i.checkCollision(t);c&&(s.ab--,t.dy=-t.dy,s.s+=c)})),0===s.ab&&(s.brickConfig.rows+=1,resetGame())}function mP(t){const i=canvas.getBoundingClientRect(),c=t.clientX-i.left;s.P.x=Math.max(Math.min(c-s.P.pW/2,W-s.P.pW),0),s.p||(s.p=!0)}function bR(){s.b.x=W/2,s.b.y=H/2+20,s.b.dx=0,s.b.dy=1.8}function resetGame(){bR(),s.P.lives=2,s.P.x=W/2-s.P.pW/2,localStorage.setItem("aS",s.s),cB()}function gL(){if(draw(),s.p)moveBall();else{ctx.font="14px monospace";const s="Move your mouse to start";ctx.fillText(s,W/2-ctx.measureText(s).width/2,H-30)}window.requestAnimationFrame(gL)}canvas.addEventListener("mousemove",mP),cB(),gL();</script>
+<title>Arkanoid</title><h1>Arkanoid in a QR Code</h1>
+<style>body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1em;
+    font-family: "AvantGarde LT Medium", sans-serif;
+    background: #131520;
+    color: #fff
+}
+
+* {
+    margin: 0
+}</style>
+<canvas height=140 width=420></canvas>
+<script>
+    const C = document.querySelector("canvas"), ctx = C.getContext("2d"), W = C.width, H = C.height, D = t => {
+        t.d || (ctx.fillStyle = t.c, ctx.fillRect(t.x, t.y, t.w, t.h))
+    }, cC = (t, s) => !t.d && s.x > t.x && s.x < t.x + t.w && s.y > t.y && s.y < t.y + t.h ? (t.d = 1, t.v) : 0, s = {
+        p: 0,
+        b: {x: W / 2, y: H / 2 + 20, dx: 0, dy: 2, r: 6},
+        P: {pW: 60, pH: 10, speed: 5, x: W / 2 - 40, y: H - 20, lives: 2},
+        bs: [],
+        ab: 0,
+        R: 2,
+        s: Number(localStorage.getItem("aS")) || 0
+    };
+
+    function cB() {
+        s.bs = [];
+        for (let e = 0; e < Math.min(Math.max(s.R, 1), 5); e++) for (let t = 0; t < 11; t++) x = 20 + 34 * t, y = 25 + 10 * e, L = Math.abs(e - s.R + 1), s.bs.push({
+            x: x,
+            y: y,
+            w: 30,
+            h: 6,
+            c: ["white", "yellow", "orange", "red", "darkred"][L],
+            v: 10 ** L,
+            d: 0
+        });
+        s.ab = 11 * s.R
+    }
+
+    function mB() {
+        let {b: e, P: t} = s;
+        var x;
+        e.x += e.dx, e.y += e.dy, (e.x + e.r > W || e.x - e.r < 0) && (e.dx = -e.dx), e.y - e.r < 0 && (e.dy = -e.dy), e.x > t.x && e.x < t.x + t.pW && e.y + e.r > t.y && (e.dy = -Math.abs(e.dy), x = (e.x - (t.x + t.pW / 2)) / t.pW * 130, e.dx = 2.5 * Math.sin(Math.PI / 180 * x)), e.y + e.r > H && (--s.P.lives, s.p = 0, bR(), 0 == s.P.lives) && (s.s *= .999, --s.R, R()), s.bs.forEach(t => {
+            t = cC(t, e);
+            t && (s.ab--, e.dy = -e.dy, s.s += t)
+        }), 0 === s.ab && (s.R += 1, R())
+    }
+
+    function mP(t) {
+        var e = C.getBoundingClientRect(), t = t.clientX - e.left;
+        s.P.x = Math.max(Math.min(t - s.P.pW / 2, W - s.P.pW), 0), s.p || (s.p = 1)
+    }
+
+    function bR() {
+        s.b.x = W / 2, s.b.y = H / 2 + 20, s.b.dx = 0, s.b.dy = 1.8
+    }
+
+    function R() {
+        bR(), s.P.lives = 2, s.P.x = W / 2 - s.P.pW / 2, localStorage.setItem("aS", s.s), cB()
+    }
+
+    function gL() {
+        ctx.clearRect(0, 0, W, H), ctx.fillStyle = "#2c2c2c", ctx.fillRect(0, 0, W, H);
+        var {x: t, y: e, r: x} = s.b, {
+            x: t,
+            y: e,
+            pW: x,
+            pH: c
+        } = (ctx.fillStyle = "white", ctx.beginPath(), ctx.arc(t, e, x, 0, 2 * Math.PI), ctx.fill(), ctx.closePath(), s.P);
+        ctx.fillStyle = "white", ctx.fillRect(t, e, x, c), s.bs.forEach(t => D(t)), ctx.fillStyle = "white", ctx.font = "16px Arial", ctx.fillText("" + Math.floor(s.s), 10, 18), s.p ? mB() : (ctx.font = "14px monospace", T = "Move your mouse to start", ctx.fillText(T, W / 2 - ctx.measureText(T).width / 2, H - 30)), window.requestAnimationFrame(gL)
+    }
+
+    C.addEventListener("mousemove", mP), cB(), gL();
+</script>
