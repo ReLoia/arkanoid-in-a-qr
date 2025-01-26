@@ -1,0 +1,222 @@
+<html>
+<head>
+    <title>Arkanoid</title>
+    <style>
+        body {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1em;
+            font-family: "AvantGarde LT Medium", sans-serif;
+            background: #131520; color: white; 
+        }
+        * { margin: 0; }
+    </style>
+</head>
+<body>
+<h1>Arkanoid in a QR Code</h1>
+<canvas height="140" width="420"></canvas>
+</body>
+<script>
+    const canvas = document.querySelector("canvas"), ctx = canvas.getContext("2d"), W = canvas.width, H = canvas.height;
+
+    class B {
+        constructor(x, y, w, h, c, v) {
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
+            this.c = c || "white";
+            this.v = v;
+            this.d = false;
+        }
+
+        draw(ctx) {
+            if (!this.d) {
+                ctx.fillStyle = this.c;
+                ctx.fillRect(this.x, this.y, this.w, this.h);
+            }
+        }
+
+        checkCollision(b) {
+            if (
+                !this.d &&
+                b.x > this.x &&
+                b.x < this.x + this.w &&
+                b.y > this.y &&
+                b.y < this.y + this.h
+            ) {
+                this.d = true;
+                return this.v;
+            }
+            return 0;
+        }
+    }
+
+    const s = {
+        p: false,
+        b: {
+            x: W / 2,
+            y: H / 2 + 20,
+            dx: 0,
+            dy: 2,
+            r: 6,
+        },
+        P: {
+            pW: 60,
+            pH: 10,
+            speed: 5,
+            x: W / 2 - (80) / 2,
+            y: H - 20,
+            lives: 2
+        },
+        bricks: [],
+        ab: 0,
+        brickConfig: {
+            rows: 2,
+            cols: 11,
+            width: 30,
+            height: 6,
+            padding: 4,
+            offsetTop: 25,
+            offsetLeft: 20,
+        },
+        s: Number(localStorage.getItem("aS")) || 0,
+    };
+
+    function cB() {
+        s.bricks = [];
+        for (let row = 0; row < Math.min(Math.max(s.brickConfig.rows, 1), 5); row++) {
+            for (let col = 0; col < s.brickConfig.cols; col++) {
+                const x =
+                    s.brickConfig.offsetLeft +
+                    col * (s.brickConfig.width + s.brickConfig.padding);
+                const y =
+                    s.brickConfig.offsetTop +
+                    row * (s.brickConfig.height + s.brickConfig.padding);
+
+                const level = Math.abs(row-s.brickConfig.rows+1);
+                s.bricks.push(new B(x, y, s.brickConfig.width, s.brickConfig.height, ["white", "yellow", "orange", "red", "darkred"][level], 10**level));
+            }
+        }
+        s.ab = s.brickConfig.rows*s.brickConfig.cols;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        
+        ctx.fillStyle = "#2c2c2c";
+        ctx.fillRect(0, 0, W, H);
+        
+        const {x, y, r} = s.b;
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+        
+        const {x: pX, y: pY, pW, pH} = s.P;
+        ctx.fillStyle = "white";
+        ctx.fillRect(pX, pY, pW, pH);
+        
+        s.bricks.forEach((brick) => brick.draw(ctx));
+        
+        ctx.fillStyle = "white";
+        ctx.font = `16px Arial`;
+        ctx.fillText(""+Math.floor(s.s), 10, 18);
+    }
+
+    function moveBall() {
+        const {b, P} = s;
+
+        b.x += b.dx;
+        b.y += b.dy;
+
+        if (b.x + b.r > W || b.x - b.r < 0) {
+            b.dx = -b.dx;
+        }
+        if (b.y - b.r < 0) {
+            b.dy = -b.dy;
+        }
+
+        if (
+            b.x > P.x &&
+            b.x < P.x + P.pW &&
+            b.y + b.r > P.y
+        ) {
+            b.dy = -Math.abs(b.dy);
+            const angle = ((b.x - (P.x + P.pW / 2)) / P.pW) * 130;
+            b.dx = Math.sin(angle * (Math.PI / 180)) * 2.5;
+        }
+
+        if (b.y + b.r > H) {
+            s.P.lives -= 1;
+            s.p = false;
+            bR();
+
+            if (s.P.lives == 0) {
+                s.s *= 0.999;
+                s.brickConfig.rows -= 1;
+                resetGame();
+            }
+        }
+
+        s.bricks.forEach((brick) => {
+            const v = brick.checkCollision(b);
+            if (v) {
+                s.ab--;
+                b.dy = -b.dy;
+                s.s += v;
+            }
+        });
+
+        if (s.ab === 0) {
+            s.brickConfig.rows += 1;
+            resetGame();
+        }
+    }
+
+    function mP(e) {
+        const r = canvas.getBoundingClientRect();
+        const mX = e.clientX - r.left;
+
+        s.P.x = Math.max(
+            Math.min(mX - s.P.pW / 2, W - s.P.pW),
+            0
+        );
+
+        if (!s.p) {
+            s.p = true;
+        }
+    }
+
+    function bR() {
+        s.b.x = W / 2;
+        s.b.y = H / 2 + 20;
+        s.b.dx = 0;
+        s.b.dy = 1.8;
+    }
+
+    function resetGame() {
+        bR();
+        s.P.lives = 2;
+        s.P.x = W / 2 - s.P.pW / 2;
+        localStorage.setItem("aS", s.s);
+        cB();
+    }
+
+    function gL() {
+        draw();
+        if (!s.p) {
+            ctx.font = "14px monospace";
+            const text = "Move your mouse to start";
+
+            ctx.fillText(text, W / 2 - ctx.measureText(text).width / 2, H - 30);
+        } else {
+            moveBall();
+        }
+        window.requestAnimationFrame(gL);
+    }
+
+    canvas.addEventListener("mousemove", mP);
+    cB();
+    gL();
+</script>
+</html>
